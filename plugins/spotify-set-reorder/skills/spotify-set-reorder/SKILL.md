@@ -36,6 +36,48 @@ Spotify's Audio Features endpoint was restricted to existing-quota apps only in 
 
 Follow this sequence. The user gets checkpoints to interrupt or correct.
 
+### Step 0 — Pre-flight: check auth state
+
+Before calling any MCP tool, verify Spotify auth is configured. If the user runs this skill before completing setup, you'll get a confusing error from the MCP — better to catch it here.
+
+Run via Bash:
+
+```bash
+CONFIG="${CLAUDE_PLUGIN_DATA:-}/spotify-config.json"
+if [ -z "${CLAUDE_PLUGIN_DATA:-}" ] || [ ! -f "$CONFIG" ]; then
+  echo "STATE=MISSING"
+elif python3 -c "
+import json, sys
+d = json.load(open('$CONFIG'))
+sys.exit(0 if d.get('accessToken') else 1)
+" 2>/dev/null; then
+  echo "STATE=OK"
+else
+  echo "STATE=NO_TOKEN"
+fi
+```
+
+- `STATE=OK` → continue to Step 1
+- `STATE=MISSING` or `STATE=NO_TOKEN` → **stop and redirect the user**:
+  > Looks like the Spotify auth isn't set up yet. That's a one-time, ~90-second step — run `/spotify-set-reorder:setup` first, then come back here with your playlist + intent.
+
+  Do not attempt to fetch tracks. The error from the MCP would be opaque; the explicit redirect above is the right UX.
+
+(If you're running outside the plugin context — e.g., the standalone-skill dev mode where `$CLAUDE_PLUGIN_DATA` isn't set — fall through to Step 1 and let the MCP's own error surface naturally. The setup skill only exists inside the plugin.)
+
+### Step 0.5 — Validate cached enrichment (if any)
+
+If `/tmp/enriched.json` exists, check whether its `playlist.id` matches the playlist ID in the user's current request. If it doesn't match, **delete the file before continuing** — re-using mismatched enriched data was a documented past bug. Always start fresh per playlist unless the user explicitly asked to iterate on an existing run.
+
+```bash
+if [ -f /tmp/enriched.json ]; then
+  CACHED_ID=$(python3 -c "import json; print(json.load(open('/tmp/enriched.json'))['playlist']['id'])" 2>/dev/null || echo "")
+  if [ -n "$CACHED_ID" ] && [ "$CACHED_ID" != "<current-playlist-id>" ]; then
+    rm /tmp/enriched.json
+  fi
+fi
+```
+
 ### Step 1 — Fetch tracks via MCP
 
 Call the MCP tool **`getPlaylistTracks`** with the playlist ID extracted from the user's URL. Paginate with `limit` and `offset`: this MCP caps `limit` at **50 per call** (not Spotify's 100), so for playlists >50 tracks issue successive calls with `offset = 0, 50, 100, …`.

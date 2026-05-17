@@ -20,38 +20,35 @@ Works for any genre. The weight given to harmonic strictness vs. narrative arc a
 - A Spotify account — **Premium required** (Spotify mandated this for Development Mode API access as of March 2026)
 - A Spotify Developer App (you create one — takes ~90 seconds, instructions below)
 
-## Install
+## Install (one-liner)
 
-```
-/plugin install github.com/demasir/spotify-set-reorder
-```
+In Claude Code:
 
-Then `/reload-plugins` (or restart Claude Code).
+1. Open the plugins UI (`/plugin` → **Marketplaces** → **Add**)
+2. Paste: `https://github.com/demasir/spotify-set-reorder`
+3. Switch to the **Plugins** tab → install `spotify-set-reorder`
 
-## Set up Spotify access (one time, ~90 seconds)
+That's it for the install. Restart Claude Code if it asks.
 
-The first time you invoke the skill, it'll guide you through this — but here's the full flow if you want to do it in advance:
+## First-run setup (~90 seconds)
 
-1. **Create a Spotify Developer App**
-   - Open https://developer.spotify.com/dashboard
-   - Click **Create app**
-   - Fill in:
-     - App name: anything (e.g. "claude-set-reorder")
-     - Description: anything
-     - **Redirect URI**: `http://127.0.0.1:8888/callback` *(must match exactly)*
-     - APIs/Services: check **Web API**
-   - Accept terms, click Save
-2. **Add yourself to the app's allowlist**
-   - In your app's dashboard, go to **Users and Access**
-   - Click **Add new user**
-   - Enter the Spotify account email + display name you use to listen
-   - This is required for Development Mode apps as of 2026 (your own account is **not** auto-added)
-3. **Copy your Client ID** (no need for Client Secret — the plugin uses PKCE)
-4. **Run the skill** — when prompted, paste the Client ID. The plugin will:
-   - Write the minimal config to its plugin data dir
-   - Open a browser to Spotify for OAuth consent
-   - Capture the callback on `127.0.0.1:8888` and save your tokens
-   - Tokens refresh automatically thereafter
+**On your next Claude Code session after install, you'll see a friendly nudge:**
+
+> 🎵 Welcome to spotify-set-reorder! One-time setup is required before first use. Run `/spotify-set-reorder:setup` and I'll walk you through it.
+
+Run that command and follow the prompts. The setup wizard handles everything: creating a Spotify Developer app, capturing your Client ID, completing OAuth via your browser. Tokens are stored in your plugin data directory and never leave your machine.
+
+What the setup does, briefly:
+
+1. Opens the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/create) in your browser
+2. Asks you to fill in a tiny app (name, redirect URI `http://127.0.0.1:8888/callback`, check Web API)
+3. You paste back the **Client ID** (no Client Secret needed — this plugin uses PKCE)
+4. A browser tab opens for you to authorize the app on your Spotify account
+5. Tokens get saved automatically and refresh themselves thereafter
+
+Requires **Spotify Premium** — Spotify's rule for Developer Mode API access since March 2026.
+
+**If you didn't see the welcome nudge** (it only shows on the next session after install): just run `/spotify-set-reorder:setup` manually.
 
 ## Use
 
@@ -82,7 +79,7 @@ The plugin combines three signals for every sequencing decision:
 
 How much weight to give harmonic strictness vs. narrative pacing depends on the style. Electronic dance music asks for tight Camelot transitions and a designed BPM curve. Contemplative MPB or folk asks for emotional pacing where BPM is a constraint, not a guide. Same workflow handles both.
 
-The full Camelot reference and design notes are in [`skills/spotify-set-reorder/references/`](skills/spotify-set-reorder/references/).
+The full Camelot reference and design notes are in [`plugins/spotify-set-reorder/skills/spotify-set-reorder/references/`](plugins/spotify-set-reorder/skills/spotify-set-reorder/references/).
 
 ## Privacy and data
 
@@ -96,9 +93,11 @@ The full Camelot reference and design notes are in [`skills/spotify-set-reorder/
 
 | Symptom | Fix |
 |---|---|
-| `403 Forbidden` on any API call | You probably forgot to add yourself to the app's **Users and Access** list. Spotify Dev Mode requires explicit allowlisting since 2026. |
-| `401 Unauthorized` after weeks of working | Refresh token expired or revoked. Re-run the skill — it'll route you back to OAuth. |
-| Browser doesn't open during auth | The skill prints the URL to console as a fallback — copy and paste it. |
+| Skill says *"Spotify auth isn't set up yet"* | Run `/spotify-set-reorder:setup`. The skill is gating you correctly. |
+| `403 Forbidden` on any API call (after setup) | Try adding your own Spotify email to the app's **Users and Access** tab in the dashboard. Most owners are auto-allowlisted but Spotify Dev Mode 2026 sometimes requires explicit entry. |
+| `401 Unauthorized` after weeks of working | Refresh token expired or revoked. Run `/spotify-set-reorder:setup` again — it's idempotent and will refresh things. |
+| Browser doesn't open during setup OAuth | The setup skill prints the URL as a fallback — copy and paste it into your browser. |
+| Port 8888 already in use during OAuth | Another process is holding port 8888 (`lsof -i :8888` to find it). Close it and re-run setup. |
 | `BPM/key estimated` on many tracks | Catalog is niche or recent enough that public databases don't have it indexed. The skill flags this and leans more on cultural reading. |
 | Plugin install fails | Make sure you're on the latest Claude Code. Plugins are a recent feature. |
 
@@ -106,7 +105,9 @@ The full Camelot reference and design notes are in [`skills/spotify-set-reorder/
 
 Bug reports and PRs welcome. The skill design and harmonic-mixing rules are deliberately conservative — if you have a sequencing approach the current logic misses, open an issue with a specific example.
 
-The bundled MCP server is a snapshot of [demasir/spotify-mcp-server](https://github.com/demasir/spotify-mcp-server) (a fork of marcelmarais/spotify-mcp-server with PKCE auth and Feb 2026 API patches). Server source lives in `servers/spotify-mcp-server/` — edit there and rebuild if needed.
+The bundled MCP server is a snapshot of [demasir/spotify-mcp-server](https://github.com/demasir/spotify-mcp-server) (a fork of marcelmarais/spotify-mcp-server with PKCE auth and Feb 2026 API patches). Server source lives in `plugins/spotify-set-reorder/servers/spotify-mcp-server/` — edit there and rebuild if needed.
+
+For repeatable onboarding testing, see `scripts/dev-reset.sh` — wipes the plugin's local state (cache, tokens, marketplace registration) so you can re-test the install/setup flow from a clean slate.
 
 ## License
 
