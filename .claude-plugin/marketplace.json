@@ -1,0 +1,15 @@
+{
+  "name": "spotify-set-reorder",
+  "owner": {
+    "name": "demasir",
+    "url": "https://github.com/demasir"
+  },
+  "plugins": [
+    {
+      "name": "spotify-set-reorder",
+      "description": "Reorder Spotify playlists with natural language intent. BPM/key/Camelot-aware sequencing for DJ sets and listening sessions. Bundles a Spotify MCP server with PKCE auth.",
+      "source": ".",
+      "version": "0.1.0"
+    }
+  ]
+}
