@@ -7,13 +7,15 @@
     "spotify-mcp": "./build/index.js"
   },
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
-    "auth": "tsc && node build/auth.js",
+    "build": "esbuild src/index.ts src/auth.ts --bundle --platform=node --format=esm --target=node18 --outdir=build --banner:js='#!/usr/bin/env node' && node -e \"require('fs').chmodSync('build/index.js', '755'); require('fs').chmodSync('build/auth.js', '755')\"",
+    "auth": "npm run build && node build/auth.js",
     "lint": "biome check --diagnostic-level=warn --error-on-warnings",
     "lint:fix": "biome check --write --unsafe --organize-imports-enabled=true",
     "typecheck": "tsc --noEmit"
   },
-  "files": ["build"],
+  "files": [
+    "build"
+  ],
   "keywords": [],
   "author": "Marcel Marais",
   "description": "A Model Context Protocol server for Spotify integration",
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/node": "^22.13.8",
+    "esbuild": "^0.28.0",
     "typescript": "^5.8.2"
   }
 }
