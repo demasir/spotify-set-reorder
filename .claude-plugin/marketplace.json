@@ -9,7 +9,7 @@
       "name": "spotify-set-reorder",
       "description": "Reorder Spotify playlists with natural language intent. BPM/key/Camelot-aware sequencing for DJ sets and listening sessions. Bundles a Spotify MCP server with PKCE auth. First-run setup wizard via /spotify-set-reorder:setup.",
       "source": "./plugins/spotify-set-reorder",
-      "version": "0.2.1"
+      "version": "0.2.2"
     }
   ]
 }
