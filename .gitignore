@@ -1,0 +1,18 @@
+# Token / per-user state — must never be committed
+spotify-config.json
+**/spotify-config.json
+
+# Local dev artifacts
+node_modules/
+.DS_Store
+*.log
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Claude Code per-user state (irrelevant for plugin distribution)
+.claude/settings.local.json
+
+# Backup snapshots written by apply_reorder.py
+/tmp/spotify-reorder-backup-*.json
