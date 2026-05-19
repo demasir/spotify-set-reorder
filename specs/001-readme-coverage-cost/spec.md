@@ -17,10 +17,13 @@ A developer or DJ stumbles on the GitHub repo from a link, a forum, or a search.
 Before they commit to creating a Spotify Developer app and authorizing OAuth,
 they read the README to decide whether the tool is worth installing for *their*
 specific situation. Today the README sells the workflow but does not tell them
-which catalogs the plugin has actually been validated on, what reordering goals
-work well, or what running it will cost them. The user closes the tab or
-installs blind. This story replaces that with a README that lets the user make
-an informed go/no-go decision in under three minutes of reading.
+which catalogs the plugin has actually been validated on, what reordering
+goals work well, what running it will cost them, or how trivially they can
+install once they decide it's worth trying. The user closes the tab or
+installs blind. This story replaces that with a README that lets the user
+make an informed go/no-go decision in under three minutes of reading —
+including seeing that the install itself is a two-line copy-paste, not a
+guided tour.
 
 **Why this priority**: This is the primary user-facing artifact for everyone
 who hasn't installed yet. Every other story in this feature exists to make
@@ -36,8 +39,11 @@ anything:
 3. Estimate the token cost of reordering a 50-track playlist within a stated
    range.
 4. Find the channel for reporting a musical-quality concern (not a bug).
+5. Install the plugin by copy-pasting at most two commands (no UI clicking
+   required) — and see this clearly enough to know "ah, that's all there
+   is to it" before deciding to try.
 
-If all four are answerable in under three minutes, the story passes.
+If all five are answerable in under three minutes, the story passes.
 
 **Acceptance Scenarios**:
 
@@ -63,6 +69,13 @@ If all four are answerable in under three minutes, the story passes.
    (install, auth, API errors, crashes) and musical issues (sequencing
    quality, harmonic transitions, cultural reading) — and the channel for
    each.
+5. **Given** a reader who has decided the tool is worth trying,
+   **When** they reach the "Install" section,
+   **Then** they see two install paths presented side-by-side with equal
+   weight: (a) a copy-pasteable slash-command sequence
+   (`/plugin marketplace add <repo-url>` + `/plugin install <plugin>@<marketplace>`),
+   and (b) the existing UI walkthrough. Both work end-to-end as of the
+   README's publish date; neither is hidden behind the other.
 
 ---
 
@@ -127,6 +140,18 @@ recorded token consumption.
   mechanical issues). The README routing must be clear enough that this is
   rare; when it happens, the maintainer's response should redirect, not
   ignore.
+- The slash-command install path fails verification before publish (the
+  commands don't complete cleanly from a fresh Claude Code session, or
+  Claude Code's `/plugin` surface has changed). The README still publishes,
+  with both methods presented side-by-side per FR-012, but the verification
+  failure mode is recorded as a known limitation and a follow-up issue is
+  filed. The UI walkthrough remains a working install path regardless.
+- An existing user installed under the previous marketplace name
+  (`spotify-set-reorder`) before the rename. Their local marketplace
+  registration becomes stale (will no longer receive updates from the
+  renamed marketplace). The release notes for the version that introduces
+  the rename MUST tell affected users to `/plugin marketplace remove` the
+  old name and re-add the new one.
 
 ## Requirements *(mandatory)*
 
@@ -154,9 +179,35 @@ recorded token consumption.
 - **FR-005**: The README MUST NOT claim genre generality that has not been
   demonstrated; specifically, the current "Works for any genre" framing
   MUST be replaced with language that reflects actual validation coverage.
-- **FR-006**: The README's existing structure (install, first-run setup,
-  use, privacy, troubleshooting, contributing, license) MUST be preserved;
-  new sections are additions and reframings, not a full rewrite.
+- **FR-006**: The README's existing top-level structure (Requirements,
+  Install, First-run setup, Use, How it works, Privacy and data,
+  Troubleshooting, Contributing, License) MUST be preserved as section
+  anchors; section *content* may be edited where this feature requires
+  it (notably Install per FR-012), but no top-level sections are
+  removed or reordered beyond the additions called out in FR-001 through
+  FR-004 plus Install's modification under FR-012.
+
+#### Install simplicity (Story 1, install path)
+
+- **FR-012**: The README's "Install" section MUST present two install
+  paths side-by-side with equal weight:
+  1. A copy-pasteable slash-command sequence using Claude Code's
+     `/plugin marketplace add <repo-url>` and
+     `/plugin install <plugin>@<marketplace>` commands.
+  2. The existing UI walkthrough (open `/plugin`, navigate to
+     Marketplaces, etc.).
+  Both methods MUST be verified to work end-to-end from a fresh Claude
+  Code session before the README is merged. Neither method is hidden
+  behind a "click to expand" or buried under the other; they appear as
+  parallel options labeled clearly.
+- **FR-013**: To make the slash-command path readable, the marketplace
+  is renamed from `spotify-set-reorder` to `spotify-tools` (final name
+  confirmed at implementation time; the spec commits only to "a name
+  distinct from the plugin name"). `.claude-plugin/marketplace.json`
+  is updated, and the plugin version is bumped to **0.3.0** (MINOR in
+  0.x semver) to reflect the breaking change for users with the old
+  marketplace registration. Release notes MUST instruct affected users
+  how to migrate.
 
 #### Validation runs (Story 2)
 
@@ -197,6 +248,11 @@ recorded token consumption.
 - **Feedback channel**: A row in the "Feedback" section. Attributes:
   category (mechanical / musical), destination (issue tracker / other),
   what to include in the report.
+- **Install path**: A method of installing the plugin presented in the
+  "Install" section. Attributes: method (`slash-command` / `ui-walkthrough`),
+  steps (ordered list), verified (boolean, true only if exercised
+  end-to-end from a fresh Claude Code session before publish), notes
+  (any platform/version caveat).
 
 ## Clarifications
 
@@ -235,6 +291,17 @@ Resolved during initial drafting (2026-05-18):
   visibility in the skill output is filed in the repository before
   `/speckit-plan` runs on this feature, and the issue link is recorded
   under "Out of Scope" in this spec. Closes the Q2 decision point.
+- **SC-007**: A first-time reader can complete the plugin install by
+  copy-pasting at most two commands from the README — no UI clicks
+  required — in under 30 seconds. Both commands MUST have been
+  verified to work end-to-end from a fresh Claude Code session before
+  the README is merged.
+- **SC-008**: `.claude-plugin/marketplace.json` is renamed from
+  `spotify-set-reorder` to a name distinct from the plugin name
+  (e.g., `spotify-tools`); both `plugins/spotify-set-reorder/.claude-plugin/plugin.json`
+  and `.claude-plugin/marketplace.json` are bumped to `0.3.0`; release
+  notes include a one-paragraph migration instruction for users with
+  the old marketplace registration.
 
 ## Assumptions
 
