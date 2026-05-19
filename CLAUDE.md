@@ -81,6 +81,9 @@ Wipes `~/.claude/plugins/{cache,data,marketplaces}/spotify-set-reorder`, `/tmp/e
 `plugin.json` and `marketplace.json` both carry the plugin version — keep them in sync. The MCP server's `package.json` version is independent and not user-visible.
 
 <!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+Active feature plans live under `specs/<NNN>-<slug>/`. Latest:
+
+- [`specs/001-readme-coverage-cost/`](specs/001-readme-coverage-cost/) — Honest README (use cases, validation coverage, expected cost, feedback channel). Shipped in v0.3.0 ([PR #5](https://github.com/demasir/spotify-set-reorder/pull/5)). The `runs/` directory holds the evidence base for the README's data-driven sections; the `contracts/` directory holds the shape contracts a reviewer can grep against.
+
+Each feature directory follows: `spec.md` (goal), `plan.md` (approach), `research.md` (decisions), `tasks.md` (work breakdown), plus `contracts/` and `runs/` as needed.
 <!-- SPECKIT END -->
