@@ -69,12 +69,21 @@ fi
 
 If `/tmp/enriched.json` exists, check whether its `playlist.id` matches the playlist ID in the user's current request. If it doesn't match, **delete the file before continuing** — re-using mismatched enriched data was a documented past bug. Always start fresh per playlist unless the user explicitly asked to iterate on an existing run.
 
+Use the playlist ID you extracted earlier (the 22-char base62 value from the user's URL), not the raw URL. Pass it via env var so the comparison runs in Python — bash string-equality with a templated value is a needless injection sink:
+
 ```bash
 if [ -f /tmp/enriched.json ]; then
-  CACHED_ID=$(python3 -c "import json; print(json.load(open('/tmp/enriched.json'))['playlist']['id'])" 2>/dev/null || echo "")
-  if [ -n "$CACHED_ID" ] && [ "$CACHED_ID" != "<current-playlist-id>" ]; then
-    rm /tmp/enriched.json
-  fi
+  CURRENT_PLAYLIST_ID="<extracted-playlist-id>" python3 - <<'PY'
+import json, os
+try:
+    with open('/tmp/enriched.json') as f:
+        cached_id = json.load(f).get('playlist', {}).get('id', '')
+except Exception:
+    cached_id = ''
+current_id = os.environ.get('CURRENT_PLAYLIST_ID', '')
+if cached_id and cached_id != current_id:
+    os.remove('/tmp/enriched.json')
+PY
 fi
 ```
 

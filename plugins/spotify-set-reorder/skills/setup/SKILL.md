@@ -85,26 +85,25 @@ Wait for the user to paste it.
 
 ## Step 4 — Validate and write initial config
 
-Validate the Client ID looks like a Spotify Client ID (32 hex characters):
+**Before running any commands**, check the pasted value yourself: it must match `^[a-f0-9]{32}$` exactly — 32 lowercase hex characters, nothing else. If it doesn't match, tell the user it doesn't look right, ask them to double-check what they copied, and wait for a fresh paste. Do not proceed past this gate until the value passes the regex.
+
+Once validated, write the initial config. Pass the Client ID via env var (never interpolate it directly into the body of a shell command) and let Python build the JSON so the value can't break out of quoting:
 
 ```bash
-CLIENT_ID="<paste-from-user>"
-if [[ ! "$CLIENT_ID" =~ ^[a-f0-9]{32}$ ]]; then
-  echo "ID doesn't look right — Spotify Client IDs are 32 hex characters. Double-check what you copied."
-  exit 1
-fi
-```
-
-If it looks valid, write the initial config:
-
-```bash
-mkdir -p "$CLAUDE_PLUGIN_DATA"
-cat > "$CLAUDE_PLUGIN_DATA/spotify-config.json" <<EOF
-{
-  "clientId": "$CLIENT_ID",
-  "redirectUri": "http://127.0.0.1:8888/callback"
-}
-EOF
+SPOTIFY_CLIENT_ID="<validated-client-id>" python3 - <<'PY'
+import json, os, re, sys
+client_id = os.environ.get('SPOTIFY_CLIENT_ID', '')
+if not re.fullmatch(r'[a-f0-9]{32}', client_id):
+    print("ID doesn't look right — Spotify Client IDs are 32 hex characters. Double-check what you copied.", file=sys.stderr)
+    sys.exit(1)
+plugin_data = os.environ['CLAUDE_PLUGIN_DATA']
+os.makedirs(plugin_data, exist_ok=True)
+with open(os.path.join(plugin_data, 'spotify-config.json'), 'w') as f:
+    json.dump({
+        'clientId': client_id,
+        'redirectUri': 'http://127.0.0.1:8888/callback',
+    }, f, indent=2)
+PY
 ```
 
 Tell the user:
