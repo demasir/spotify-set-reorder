@@ -1,6 +1,6 @@
 {
   "name": "spotify-set-reorder",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Reorder Spotify playlists with natural language intent — DJ sets, listening sessions, vibe transitions. BPM/key/Camelot-aware sequencing via WebSearch + LLM curation. Bundles a Spotify MCP server (PKCE auth). First-run setup via /spotify-set-reorder:setup.",
   "author": {
     "name": "Rafael Demasi",
