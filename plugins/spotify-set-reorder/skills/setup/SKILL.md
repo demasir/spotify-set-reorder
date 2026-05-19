@@ -77,7 +77,7 @@ Then guide the user, in chat:
 >
 > Accept the terms, hit Save.
 >
-> You'll land on the app's page. Copy the **Client ID** (32 characters, looks like `783ecc31c9f44363941c6e9fb6bb1add`). You do NOT need the Client Secret — we use PKCE.
+> You'll land on the app's page. Copy the **Client ID** (32 hex characters, e.g. `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`). You do NOT need the Client Secret — we use PKCE.
 >
 > Paste the Client ID here.
 
