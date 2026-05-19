@@ -1,4 +1,4 @@
-# spotify-set-reorder
+# Spotify Set (Playlist) Reorder
 
 A Claude Code plugin that reorders Spotify playlists with natural language intent.
 
