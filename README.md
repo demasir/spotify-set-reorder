@@ -6,6 +6,14 @@ Drop a playlist URL and a goal — *"end of night, hypnotic prog house, lower en
 
 Designed to be catalog-agnostic — see [What's been validated](#whats-been-validated) below for the genres it has actually been demonstrated on. The weight given to harmonic strictness vs. narrative arc adapts to what the catalog actually is.
 
+> [!TIP]
+> 🎧 **TL;DR — Quick start**
+> ```
+> /plugin marketplace add https://github.com/demasir/spotify-set-reorder
+> /plugin install spotify-set-reorder@spotify-tools
+> ```
+> Then run `/spotify-set-reorder:setup` once (~90s), and `/spotify-set-reorder` to reorder a playlist. Requires Claude Code + Spotify Premium.
+
 ## What's in the box
 
 - **Skill** `/spotify-set-reorder` — the workflow itself, 9 steps with checkpoints
